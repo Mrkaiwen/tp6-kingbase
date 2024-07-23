@@ -38,10 +38,6 @@ class KingBase extends PDOConnection
         }
         $dsn .= ';dbname=' . $config['database'];
 
-        if (!empty($config['charset'])) {
-            $dsn .= ';charset=' . $config['charset'];
-        }
-
         return $dsn;
     }
 
