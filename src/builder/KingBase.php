@@ -477,4 +477,35 @@ class KingBase extends Builder
 
         return ' ON DUPLICATE KEY UPDATE ' . implode(' , ', $updates) . ' ';
     }
+
+    /**
+     * table分析
+     * @access protected
+     * @param  Query     $query     查询对象
+     * @param  mixed     $tables    表名
+     * @return string
+     */
+    protected function parseTable(Query $query, $tables): string
+    {
+        $item    = [];
+        $options = $query->getOptions();
+
+        foreach ((array) $tables as $key => $table) {
+            if ($table instanceof Raw) {
+                $item[] = $this->parseRaw($query, $table);
+            } elseif (!is_numeric($key)) {
+                $item[] = $this->parseKey($query, $key) . ' ' . $this->parseKey($query, $table);
+            } elseif (isset($options['alias'][$table])) {
+                $item[] = $this->parseKey($query, $table) . ' ' . $this->parseKey($query, $options['alias'][$table]);
+            } else {
+                $prefix = config('database.connections.mysql.database').'.';
+                if(strpos($table,$prefix) === false){
+                    $table = $prefix.$options['table'];
+                }
+                $item[] = $this->parseKey($query, $table);
+            }
+        }
+
+        return implode(',', $item);
+    }
 }
