@@ -498,14 +498,67 @@ class KingBase extends Builder
             } elseif (isset($options['alias'][$table])) {
                 $item[] = $this->parseKey($query, $table) . ' ' . $this->parseKey($query, $options['alias'][$table]);
             } else {
-                $prefix = config('database.connections.mysql.database').'.';
-                if(strpos($table,$prefix) === false){
-                    $table = $prefix.$options['table'];
+                if (strpos($table, ')')) {
+                    // 子查询
+                }else{
+                    $prefix = config('database.connections.mysql.database') . '.';
+                    if (strpos($table, $prefix) === false) {
+                        $table = $prefix . $options['table'];
+                    }
                 }
+
                 $item[] = $this->parseKey($query, $table);
             }
         }
 
         return implode(',', $item);
     }
+
+    /**
+     * 日期时间条件解析
+     * @access protected
+     * @param  Query   $query 查询对象
+     * @param  mixed   $value
+     * @param  string  $key
+     * @param  integer $bindType
+     * @return string
+     */
+    protected function parseDateTime(Query $query, $value, string $key, int $bindType): string
+    {
+        $options = $query->getOptions();
+
+        // 获取时间字段类型
+        if (strpos($key, '.')) {
+            [$table, $key] = explode('.', $key);
+
+            if (isset($options['alias']) && $pos = array_search($table, $options['alias'])) {
+                $table = $pos;
+            }
+        } else {
+            $table = $options['table'];
+        }
+
+        $type = $query->getFieldType($key);
+
+        if ($type) {
+            if (is_string($value)) {
+//                $value = strtotime($value) ?: $value;
+            }
+
+            if (is_int($value)) {
+                if (preg_match('/(datetime|timestamp)/is', $type)) {
+                    // 日期及时间戳类型
+                    $value = date('Y-m-d H:i:s', $value);
+                } elseif (preg_match('/(date)/is', $type)) {
+                    // 日期及时间戳类型
+                    $value = date('Y-m-d', $value);
+                }
+            }
+        }
+
+        $name = $query->bindValue($value, $bindType);
+
+        return ':' . $name;
+    }
+
 }
