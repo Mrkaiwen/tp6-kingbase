@@ -50,7 +50,8 @@ class KingBase extends PDOConnection
     public function getFields(string $tableName): array
     {
         [$tableName] = explode(' ', $tableName);
-
+        $tabs = explode('.', $tableName);
+        $tableName = end($tabs);
 
         $sql = "SELECT column_name, data_type, is_nullable, column_default FROM information_schema.columns WHERE table_name = '{$tableName}';";
 //        $sql    = 'SHOW FULL COLUMNS FROM ' . $tableName;
