@@ -494,24 +494,29 @@ class KingBase extends Builder
             if ($table instanceof Raw) {
                 $item[] = $this->parseRaw($query, $table);
             } elseif (!is_numeric($key)) {
-                $item[] = $this->parseKey($query, $key) . ' ' . $this->parseKey($query, $table);
+                $item[] = $this->parseKey($query, $this->getTable($key)) . ' ' . $this->parseKey($query, $table);
             } elseif (isset($options['alias'][$table])) {
-                $item[] = $this->parseKey($query, $table) . ' ' . $this->parseKey($query, $options['alias'][$table]);
+                $item[] = $this->parseKey($query, $this->getTable($table)) . ' ' . $this->parseKey($query, $options['alias'][$table]);
             } else {
-                if (strpos($table, ')')) {
-                    // 子查询
-                }else{
-                    $prefix = config('database.connections.mysql.database') . '.';
-                    if (strpos($table, $prefix) === false) {
-                        $table = $prefix . $options['table'];
-                    }
-                }
-
-                $item[] = $this->parseKey($query, $table);
+                $item[] = $this->parseKey($query, $this->getTable($table));
             }
         }
 
         return implode(',', $item);
+    }
+
+    public function getTable($table)
+    {
+        $table_new = $table;
+        if (strpos($table, ')')) {
+            // 子查询
+        } else {
+            $prefix = config('database.connections.mysql.database') . '.';
+            if (strpos($table, $prefix) === false) {
+                $table_new = $prefix . $table;
+            }
+        }
+        return $table_new;
     }
 
     /**
@@ -560,5 +565,4 @@ class KingBase extends Builder
 
         return ':' . $name;
     }
-
 }
