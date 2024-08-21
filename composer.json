@@ -19,5 +19,6 @@
         "php": ">=7.3.0",
         "analog/analog": "^1.0",
         "topthink/think-orm": "^2.0"
-    }
+    },
+    "license": "MIT"
 }
